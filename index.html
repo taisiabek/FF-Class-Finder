@@ -33,6 +33,47 @@ h1{font-size:25px;margin:0}.sub,.muted,.stats{color:var(--muted)}.topright{displ
 .menu{position:fixed;left:9px;right:9px;top:70px;width:auto;max-height:75vh}.options{max-height:55vh}.option{min-height:43px}.option input{width:20px;height:20px}
 .class{grid-template-columns:52px 1fr auto}.class>div:nth-child(3),.class>div:nth-child(4){grid-column:2}.savedrow{grid-template-columns:48px 1fr}.savedrow>div:nth-child(3),.savedrow>button{grid-column:2}
 }
+
+/* v9 UX refinements */
+.fav-section{display:flex;align-items:center;gap:6px;min-width:0}
+.fav-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap}
+.fav-scroll{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1}
+.fav-scroll::-webkit-scrollbar{display:none}
+.fav-scroll .chip{padding:5px 8px;font-size:12px}
+.menu-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.menu-close{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:5px 8px;font-size:12px;cursor:pointer}
+.option{display:grid;grid-template-columns:22px 1fr 22px;gap:8px;align-items:center;padding:7px 4px}
+.option input{width:18px;height:18px;margin:0}
+.option .opt-label{min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.option .fav-toggle{border:0;background:none;color:var(--muted);font-size:17px;padding:0;cursor:pointer;text-align:center}
+.option .fav-toggle.on{color:#f0b429}
+.class{grid-template-columns:58px minmax(0,1.65fr) minmax(120px,.9fr) minmax(120px,.9fr) 28px;gap:8px;padding:7px 9px;border-radius:10px}
+.time{font-size:16px}
+.classname{font-size:13px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.family{font-size:10px;line-height:1.2;margin-top:2px}
+.class .badge{font-size:9px;padding:2px 5px;margin-top:2px}
+.class strong{font-size:12px}
+.class .meta{font-size:10px}
+.star,.bookmark{font-size:17px}
+.results-head{margin-top:9px}
+.day{margin-top:10px}
+.day h3{font-size:15px;margin-bottom:5px}
+.filters{margin-bottom:7px}
+@media(max-width:700px){
+  .fav-section{align-items:flex-start}
+  .fav-title{padding-top:5px}
+  .menu-head{position:sticky;top:0;background:var(--card);z-index:2;padding-bottom:4px}
+  .option{grid-template-columns:24px minmax(0,1fr) 24px;min-height:40px;padding:5px 2px}
+  .option .opt-label{font-size:14px}
+  .class{grid-template-columns:48px minmax(0,1fr) 26px;padding:6px 8px;gap:5px 7px}
+  .class>div:nth-child(3),.class>div:nth-child(4){grid-column:2}
+  .class>button{grid-column:3;grid-row:1}
+  .time{font-size:15px}
+  .classname{font-size:12px}
+  .family{font-size:9px}
+  .class strong{font-size:11px}
+}
+
 </style></head>
 <body><main class="wrap">
 <div class="top"><div><h1>FF Class Finder</h1><div class="sub">Fitness First UAE · weekly planner</div></div><div class="topright"><span id="stats" class="stats"></span><button id="themeBtn" class="btn">☀️ Light</button></div></div>
@@ -44,15 +85,16 @@ h1{font-size:25px;margin:0}.sub,.muted,.stats{color:var(--muted)}.topright{displ
 <button class="c3" onclick='quickPillar("HIIT / VO₂max")'><strong>HIIT / VO₂max</strong><small>hard intervals</small></button>
 </div>
 <div class="sectionlabel">My week</div><div class="myweekbar"><button id="savedToggle" class="chip">🔖 Saved <span id="savedCount">0</span></button></div><div id="savedWeek" class="savedweek hidden"></div>
-<div class="sectionlabel">Favourite instructors</div><div id="favbar" class="favbar"></div>
+<div class="fav-section"><div class="fav-title">★ Instructors</div><div id="favbar" class="fav-scroll"></div></div>
+<div class="fav-section"><div class="fav-title">★ Clubs</div><div id="favclubs" class="fav-scroll"></div></div>
 
 <div class="filters">
-<div class="field"><label>Training type <button onclick='clearMulti("pillar")'>Clear</button></label><button class="multi-btn" id="pillarBtn">All</button><div class="menu hidden" id="pillarMenu"><input placeholder="Search…" data-search="pillar"><div class="menu-actions"><button onclick='selectAllVisible("pillar")'>Select visible</button><button onclick='clearMulti("pillar")'>Clear</button></div><div class="options" id="pillarOptions"></div></div></div>
-<div class="field"><label>Class type <button onclick='clearMulti("classType")'>Clear</button></label><button class="multi-btn" id="classTypeBtn">All</button><div class="menu hidden" id="classTypeMenu"><input placeholder="Search…" data-search="classType"><div class="menu-actions"><button onclick='selectAllVisible("classType")'>Select visible</button><button onclick='clearMulti("classType")'>Clear</button></div><div class="options" id="classTypeOptions"></div></div></div>
-<div class="field"><label>Instructor <button onclick='clearMulti("instructor")'>Clear</button></label><button class="multi-btn" id="instructorBtn">All</button><div class="menu hidden" id="instructorMenu"><input placeholder="Search instructors…" data-search="instructor"><div class="menu-actions"><button onclick='selectFavorites()'>★ Favourites</button><button onclick='clearMulti("instructor")'>Clear</button></div><div class="options" id="instructorOptions"></div></div></div>
-<div class="field"><label>Club <button onclick='clearMulti("club")'>Clear</button></label><button class="multi-btn" id="clubBtn">All clubs</button><div class="menu hidden" id="clubMenu"><input placeholder="Search clubs…" data-search="club"><div class="menu-actions"><button onclick='selectDubai()'>Dubai</button><button onclick='selectOutsideDubai()'>Other UAE</button><button onclick='clearMulti("club")'>Clear</button></div><div class="options" id="clubOptions"></div></div></div>
-<div class="field"><label>Date <button onclick='clearMulti("date")'>Clear</button></label><button class="multi-btn" id="dateBtn">Whole week</button><div class="menu hidden" id="dateMenu"><div class="menu-actions"><button onclick='clearMulti("date")'>Whole week</button></div><div class="options" id="dateOptions"></div></div></div>
-<div class="field"><label>Exact class <button onclick='clearMulti("exact")'>Clear</button></label><button class="multi-btn" id="exactBtn">All classes</button><div class="menu hidden" id="exactMenu"><input placeholder="Search class names…" data-search="exact"><div class="menu-actions"><button onclick='clearMulti("exact")'>Clear</button></div><div class="options" id="exactOptions"></div></div></div>
+<div class="field"><label>Training type <button onclick='clearMulti("pillar")'>Clear</button></label><button class="multi-btn" id="pillarBtn">All</button><div class="menu hidden" id="pillarMenu"><div class="menu-head"><strong>pillar</strong><button class="menu-close" onclick='closeMenu("pillar")'>Done</button></div><input placeholder="Search…" data-search="pillar"><div class="menu-actions"><button onclick='selectAllVisible("pillar")'>Select visible</button><button onclick='clearMulti("pillar")'>Clear</button></div><div class="options" id="pillarOptions"></div></div></div>
+<div class="field"><label>Class type <button onclick='clearMulti("classType")'>Clear</button></label><button class="multi-btn" id="classTypeBtn">All</button><div class="menu hidden" id="classTypeMenu"><div class="menu-head"><strong>Class type</strong><button class="menu-close" onclick='closeMenu("classType")'>Done</button></div><input placeholder="Search…" data-search="classType"><div class="menu-actions"><button onclick='selectAllVisible("classType")'>Select visible</button><button onclick='clearMulti("classType")'>Clear</button></div><div class="options" id="classTypeOptions"></div></div></div>
+<div class="field"><label>Instructor <button onclick='clearMulti("instructor")'>Clear</button></label><button class="multi-btn" id="instructorBtn">All</button><div class="menu hidden" id="instructorMenu"><div class="menu-head"><strong>instructor</strong><button class="menu-close" onclick='closeMenu("instructor")'>Done</button></div><input placeholder="Search instructors…" data-search="instructor"><div class="menu-actions"><button onclick='selectFavorites()'>★ Favourites</button><button onclick='clearMulti("instructor")'>Clear</button></div><div class="options" id="instructorOptions"></div></div></div>
+<div class="field"><label>Club <button onclick='clearMulti("club")'>Clear</button></label><button class="multi-btn" id="clubBtn">All clubs</button><div class="menu hidden" id="clubMenu"><div class="menu-head"><strong>club</strong><button class="menu-close" onclick='closeMenu("club")'>Done</button></div><input placeholder="Search clubs…" data-search="club"><div class="menu-actions"><button onclick='selectDubai()'>Dubai</button><button onclick='selectOutsideDubai()'>Other UAE</button><button onclick='clearMulti("club")'>Clear</button></div><div class="options" id="clubOptions"></div></div></div>
+<div class="field"><label>Date <button onclick='clearMulti("date")'>Clear</button></label><button class="multi-btn" id="dateBtn">Whole week</button><div class="menu hidden" id="dateMenu"><div class="menu-head"><strong>date</strong><button class="menu-close" onclick='closeMenu("date")'>Done</button></div><div class="menu-actions"><button onclick='clearMulti("date")'>Whole week</button></div><div class="options" id="dateOptions"></div></div></div>
+<div class="field"><label>Exact class <button onclick='clearMulti("exact")'>Clear</button></label><button class="multi-btn" id="exactBtn">All classes</button><div class="menu hidden" id="exactMenu"><div class="menu-head"><strong>exact</strong><button class="menu-close" onclick='closeMenu("exact")'>Done</button></div><input placeholder="Search class names…" data-search="exact"><div class="menu-actions"><button onclick='clearMulti("exact")'>Clear</button></div><div class="options" id="exactOptions"></div></div></div>
 <div class="activefilters" id="activeFilters"></div>
 <div class="searchbar"><input id="q" placeholder="Search trainer, class, club, room…"><button id="searchBtn" class="btn primary">Search</button><button id="resetBtn" class="btn">Reset all</button></div>
 </div>
@@ -63,7 +105,7 @@ const DATA=[{"ClassName": "Strength Workout 45min", "ClassShortDescription": "Th
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const uniq=a=>[...new Set(a.filter(Boolean))].sort((a,b)=>a.localeCompare(b)); const dateKey=s=>s.slice(0,10),fmtTime=s=>s.slice(11,16);
 const fmtDate=s=>new Intl.DateTimeFormat("en-AE",{weekday:"long",day:"numeric",month:"long"}).format(new Date(s));
-const favorites=new Set(JSON.parse(localStorage.getItem("ff-favorites-v8")||"[]")); const saved=new Set(JSON.parse(localStorage.getItem("ff-saved-v8")||"[]"));
+const favorites=new Set(JSON.parse(localStorage.getItem("ff-favorites-v8")||"[]")); const favoriteClubs=new Set(JSON.parse(localStorage.getItem("ff-favorite-clubs-v1")||"[]")); const saved=new Set(JSON.parse(localStorage.getItem("ff-saved-v8")||"[]"));
 function mondayOf(s){const [y,m,d]=s.split("-").map(Number),x=new Date(y,m-1,d),wd=(x.getDay()+6)%7;x.setDate(x.getDate()-wd);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`}
 const WEEKS=uniq(DATA.map(x=>mondayOf(dateKey(x.ClassDateTime))));let weekIndex=0;
 const n=new Date(),nk=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`,nm=mondayOf(nk);if(WEEKS.includes(nm))weekIndex=WEEKS.indexOf(nm);
@@ -80,7 +122,39 @@ function addDays(s,k){const [y,m,d]=s.split("-").map(Number);return new Date(y,m
 function updateWeek(){const mon=WEEKS[weekIndex],sun=addDays(mon,6),md=addDays(mon,0);$("weekTitle").textContent=`Week ${isoWeek(md)} · Monday–Sunday`;$("weekRange").textContent=`${md.toLocaleDateString("en-AE",{day:"numeric",month:"short"})} – ${sun.toLocaleDateString("en-AE",{day:"numeric",month:"short",year:"numeric"})}`;$("prevWeek").disabled=weekIndex===0;$("nextWeek").disabled=weekIndex===WEEKS.length-1;cfg.date.values=uniq(DATA.filter(x=>mondayOf(dateKey(x.ClassDateTime))===mon).map(x=>dateKey(x.ClassDateTime)));cfg.date.selected.clear();renderMulti("date")}
 $("prevWeek").onclick=()=>{if(weekIndex>0){weekIndex--;updateWeek();applySearch()}};$("nextWeek").onclick=()=>{if(weekIndex<WEEKS.length-1){weekIndex++;updateWeek();applySearch()}};
 function optionLabel(type,v){if(type==="date")return new Intl.DateTimeFormat("en-AE",{weekday:"short",day:"numeric",month:"short"}).format(new Date(v+"T12:00:00"));if(type==="instructor")return `${favorites.has(v)?"★ ":""}${v}`;return v}
-function renderMulti(type){const c=cfg[type],search=document.querySelector(`[data-search="${type}"]`),q=(search?.value||"").toLowerCase(),visible=c.values.filter(v=>v.toLowerCase().includes(q));$(`${type}Options`).innerHTML=visible.map(v=>`<label class="option"><input type="checkbox" ${c.selected.has(v)?"checked":""} onchange='toggleMulti("${type}",${JSON.stringify(v)},this.checked)'><span>${esc(optionLabel(type,v))}</span></label>`).join("");const a=[...c.selected],defaults={pillar:"All",classType:"All",instructor:"All",club:"All clubs",date:"Whole week",exact:"All classes"};$(`${type}Btn`).textContent=!a.length?defaults[type]:a.length===1?optionLabel(type,a[0]):`${a.length} selected`}
+function renderMulti(type){
+ const c=cfg[type],search=document.querySelector(`[data-search="${type}"]`),q=(search?.value||"").toLowerCase(),visible=c.values.filter(v=>v.toLowerCase().includes(q));
+ $(`${type}Options`).innerHTML=visible.map(v=>{
+   const showFav=type==="instructor"||type==="club";
+   const favOn=type==="instructor"?favorites.has(v):type==="club"?favoriteClubs.has(v):false;
+   return `<label class="option">
+     <input type="checkbox" ${c.selected.has(v)?"checked":""} onchange='toggleMulti("${type}",${JSON.stringify(v)},this.checked)'>
+     <span class="opt-label">${esc(optionLabel(type,v))}</span>
+     ${showFav?`<button type="button" class="fav-toggle ${favOn?"on":""}" onclick='event.preventDefault();event.stopPropagation();toggleFavoriteEntity("${type}",${JSON.stringify(v)})'>${favOn?"★":"☆"}</button>`:"<span></span>"}
+   </label>`;
+ }).join("");
+ const a=[...c.selected],defaults={pillar:"All",classType:"All",instructor:"All",club:"All clubs",date:"Whole week",exact:"All classes"};
+ $(`${type}Btn`).textContent=!a.length?defaults[type]:a.length===1?optionLabel(type,a[0]):`${a.length} selected`
+}
+
+function closeMenu(type){$(`${type}Menu`).classList.add("hidden")}
+function toggleFavoriteEntity(type,v){
+ if(type==="instructor"){
+   favorites.has(v)?favorites.delete(v):favorites.add(v);
+   localStorage.setItem("ff-favorites-v8",JSON.stringify([...favorites]));
+   renderFavs(); renderMulti("instructor");
+ } else if(type==="club"){
+   favoriteClubs.has(v)?favoriteClubs.delete(v):favoriteClubs.add(v);
+   localStorage.setItem("ff-favorite-clubs-v1",JSON.stringify([...favoriteClubs]));
+   renderFavClubs(); renderMulti("club");
+ }
+}
+function selectFavoriteClubs(){
+ cfg.club.selected.clear();
+ [...favoriteClubs].filter(v=>cfg.club.values.includes(v)).forEach(v=>cfg.club.selected.add(v));
+ renderMulti("club");renderActive();applySearch();
+}
+
 function toggleMulti(type,v,on){on?cfg[type].selected.add(v):cfg[type].selected.delete(v);renderMulti(type);renderActive()}function clearMulti(type){cfg[type].selected.clear();renderMulti(type);renderActive()}function selectAllVisible(type){const s=document.querySelector(`[data-search="${type}"]`),q=(s?.value||"").toLowerCase();cfg[type].values.filter(v=>v.toLowerCase().includes(q)).forEach(v=>cfg[type].selected.add(v));renderMulti(type);renderActive()}
 function selectFavorites(){cfg.instructor.selected.clear();[...favorites].filter(v=>cfg.instructor.values.includes(v)).forEach(v=>cfg.instructor.selected.add(v));renderMulti("instructor");renderActive()}function selectDubai(){cfg.club.selected.clear();DATA.filter(x=>x._region==="Dubai").forEach(x=>cfg.club.selected.add(x.LocationName));renderMulti("club");renderActive()}function selectOutsideDubai(){cfg.club.selected.clear();DATA.filter(x=>x._region!=="Dubai").forEach(x=>cfg.club.selected.add(x.LocationName));renderMulti("club");renderActive()}
 function renderActive(){const p=[];for(const [type,c] of Object.entries(cfg))for(const v of c.selected)p.push(`<button class="chip" onclick='toggleMulti("${type}",${JSON.stringify(v)},false)'>${esc(optionLabel(type,v))} <span class="x">×</span></button>`);$("activeFilters").innerHTML=p.join("")}
@@ -88,9 +162,16 @@ for(const type of Object.keys(cfg)){$(`${type}Btn`).onclick=()=>{$(`${type}Menu`
 function quickPillar(v){cfg.pillar.selected.clear();cfg.pillar.selected.add(v);renderMulti("pillar");renderActive();applySearch()}
 function resetAll(){for(const c of Object.values(cfg))c.selected.clear();$("q").value="";for(const type of Object.keys(cfg))renderMulti(type);renderActive();applySearch()}$("resetBtn").onclick=resetAll;$("searchBtn").onclick=()=>{applySearch();$("results").scrollIntoView({behavior:"smooth",block:"start"})};
 function filtered(){const mon=WEEKS[weekIndex],q=$("q").value.trim().toLowerCase();return DATA.filter(x=>{const t=(x.TrainerName||"").trim(),mod=x._modality||x._family;if(mondayOf(dateKey(x.ClassDateTime))!==mon)return false;if(cfg.pillar.selected.size&&!cfg.pillar.selected.has(x._primary))return false;if(cfg.classType.selected.size&&!cfg.classType.selected.has(mod))return false;if(cfg.instructor.selected.size&&!cfg.instructor.selected.has(t))return false;if(cfg.club.selected.size&&!cfg.club.selected.has(x.LocationName))return false;if(cfg.date.selected.size&&!cfg.date.selected.has(dateKey(x.ClassDateTime)))return false;if(cfg.exact.selected.size&&!cfg.exact.selected.has(x.ClassName))return false;if(q&&![t,x.LocationName,x.ClassName,x.MasterClass,x.RoomName,mod,x._primary].join(" ").toLowerCase().includes(q))return false;return true}).sort((a,b)=>a.ClassDateTime.localeCompare(b.ClassDateTime)||a.LocationName.localeCompare(b.LocationName))}
-function toggleFav(v){favorites.has(v)?favorites.delete(v):favorites.add(v);localStorage.setItem("ff-favorites-v8",JSON.stringify([...favorites]));renderMulti("instructor");renderFavs();applySearch()}function renderFavs(){const a=[...favorites].filter(v=>cfg.instructor.values.includes(v)).sort();$("favbar").innerHTML=a.length?`<button class="chip" onclick="selectFavorites();applySearch()">★ All favourites</button>`+a.map(v=>`<button class="chip" onclick='cfg.instructor.selected.clear();cfg.instructor.selected.add(${JSON.stringify(v)});renderMulti("instructor");renderActive();applySearch()'>★ ${esc(v)}</button>`).join(""):`<span class="muted">No favourites yet</span>`}
+function toggleFav(v){toggleFavoriteEntity("instructor",v);applySearch()}function renderFavs(){
+ const a=[...favorites].filter(v=>cfg.instructor.values.includes(v)).sort();
+ $("favbar").innerHTML=a.length?`<button class="chip" onclick="selectFavorites();applySearch()">All</button>`+a.map(v=>`<button class="chip" onclick='cfg.instructor.selected.clear();cfg.instructor.selected.add(${JSON.stringify(v)});renderMulti("instructor");renderActive();applySearch()'>${esc(v)}</button>`).join(""):`<span class="muted">None</span>`
+}
+function renderFavClubs(){
+ const a=[...favoriteClubs].filter(v=>cfg.club.values.includes(v)).sort();
+ $("favclubs").innerHTML=a.length?`<button class="chip" onclick="selectFavoriteClubs()">All</button>`+a.map(v=>`<button class="chip" onclick='cfg.club.selected.clear();cfg.club.selected.add(${JSON.stringify(v)});renderMulti("club");renderActive();applySearch()'>${esc(v)}</button>`).join(""):`<span class="muted">None</span>`
+}
 function toggleSaved(id){id=String(id);saved.has(id)?saved.delete(id):saved.add(id);localStorage.setItem("ff-saved-v8",JSON.stringify([...saved]));renderSaved();applySearch()}function bookingOpenText(s){const d=new Date(s);d.setHours(d.getHours()-48);return d.toLocaleString("en-AE",{weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
 function renderSaved(){const a=DATA.filter(x=>saved.has(String(x.SlotBookingId))).sort((x,y)=>x.ClassDateTime.localeCompare(y.ClassDateTime));$("savedCount").textContent=a.length;if(!a.length){$("savedWeek").classList.add("hidden");$("savedWeek").innerHTML="";return}$("savedWeek").innerHTML=a.map(x=>`<div class="savedrow"><div><strong>${fmtTime(x.ClassDateTime)}</strong></div><div><strong>${esc(x.ClassName)}</strong><div class="meta">${esc((x.TrainerName||"").trim())} · ${esc(x.LocationName)}</div></div><div><span class="badge">${esc(x._primary)}</span><div class="bookopen">Booking opens ${bookingOpenText(x.ClassDateTime)}</div></div><button class="bookmark on" onclick='toggleSaved(${JSON.stringify(String(x.SlotBookingId))})'>🔖</button></div>`).join("")}$("savedToggle").onclick=()=>{$("savedWeek").classList.toggle("hidden")};
-function applySearch(){const a=filtered();$("stats").textContent=`${a.length} classes`;$("resultCount").textContent=`${a.length} results`;if(!a.length){$("results").innerHTML='<div class="empty">No classes match these filters.</div>';return}const groups={};a.forEach(x=>(groups[dateKey(x.ClassDateTime)]??=[]).push(x));$("results").innerHTML=Object.values(groups).map(items=>`<section class="day"><h3>${fmtDate(items[0].ClassDateTime)}</h3><div class="grid">${items.map(x=>{const t=(x.TrainerName||"").trim(),fav=favorites.has(t),sv=saved.has(String(x.SlotBookingId)),mod=x._modality||x._family;return `<article class="class"><div class="time">${fmtTime(x.ClassDateTime)}</div><div><div class="classname">${esc(x.ClassName)}</div><div class="family">${esc(mod)} · ${x.Duration} min</div><span class="badge">${esc(x._primary)}</span></div><div><button class="star ${fav?"on":""}" onclick='toggleFav(${JSON.stringify(t)})'>${fav?"★":"☆"}</button> <strong>${esc(t)}</strong></div><div><strong>${esc(x.LocationName)}</strong><div class="room">${esc(x.RoomName||"")}</div></div><button class="bookmark ${sv?"on":""}" onclick='toggleSaved(${JSON.stringify(String(x.SlotBookingId))})'>${sv?"🔖":"♡"}</button></article>`}).join("")}</div></section>`).join("")}
-for(const type of Object.keys(cfg))renderMulti(type);updateWeek();renderActive();renderFavs();renderSaved();applySearch();
+function applySearch(){const a=filtered();$("stats").textContent=`${a.length} classes`;$("resultCount").textContent=`${a.length} results`;if(!a.length){$("results").innerHTML='<div class="empty">No classes match these filters.</div>';return}const groups={};a.forEach(x=>(groups[dateKey(x.ClassDateTime)]??=[]).push(x));$("results").innerHTML=Object.values(groups).map(items=>`<section class="day"><h3>${fmtDate(items[0].ClassDateTime)}</h3><div class="grid">${items.map(x=>{const t=(x.TrainerName||"").trim(),fav=favorites.has(t),sv=saved.has(String(x.SlotBookingId)),mod=x._modality||x._family;return `<article class="class"><div class="time">${fmtTime(x.ClassDateTime)}</div><div><div class="classname">${esc(x.ClassName)}</div><div class="family">${esc(mod)} · ${x.Duration} min</div><span class="badge">${esc(x._primary)}</span></div><div><button class="star ${fav?"on":""}" onclick='toggleFav(${JSON.stringify(t)})'>${fav?"★":"☆"}</button> <strong>${esc(t)}</strong></div><div><strong>${esc(x.LocationName)}</strong></div><button class="bookmark ${sv?"on":""}" onclick='toggleSaved(${JSON.stringify(String(x.SlotBookingId))})'>${sv?"🔖":"♡"}</button></article>`}).join("")}</div></section>`).join("")}
+for(const type of Object.keys(cfg))renderMulti(type);updateWeek();renderActive();renderFavs();renderFavClubs();renderSaved();applySearch();
 </script></body></html>
