@@ -1,4 +1,4 @@
-name: Refresh Fitness First schedule
+name: Refresh Fitness First Schedule
 
 on:
   workflow_dispatch:
