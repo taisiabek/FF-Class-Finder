@@ -3,21 +3,24 @@ name: Refresh Fitness First schedule
 on:
   workflow_dispatch:
   schedule:
-    # 05:15 UTC = 09:15 Dubai. Scheduled runs open a PR; they do not publish directly.
     - cron: "15 5 * * *"
 
 permissions:
   contents: write
-  pull-requests: write
+
+concurrency:
+  group: refresh-fitness-first-schedule
+  cancel-in-progress: false
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           ref: main
+          persist-credentials: true
 
       - name: Fetch and validate timetable
         run: python3 scripts/update_schedule.py --index index.html --days 21
@@ -35,33 +38,14 @@ jobs:
           PY
           node --check /tmp/app.js
 
-      - name: Detect changes
-        id: changes
+      - name: Publish updated timetable
         run: |
           if git diff --quiet -- index.html; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "No schedule changes"
+            exit 0
           fi
-
-      - name: Create schedule update pull request
-        if: steps.changes.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          branch="automation/schedule-$(date -u +%Y%m%d-%H%M)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c "$branch"
           git add index.html
           git commit -m "Update Fitness First timetable"
-          git push origin "$branch"
-          gh pr create \
-            --base main \
-            --head "$branch" \
-            --title "Update Fitness First timetable" \
-            --body "Automated timetable refresh. The workflow fetched all configured UAE clubs, removed excluded former instructors, applied the current class taxonomy, and passed basic validation. Merge this PR to publish through the existing Pages workflow."
-
-      - name: No changes
-        if: steps.changes.outputs.changed != 'true'
-        run: echo "The timetable data is unchanged."
+          git push origin HEAD:main
